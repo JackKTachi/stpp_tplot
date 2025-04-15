@@ -14,4 +14,18 @@ Simple time series plotting library based on pyspedas and matplotlib.
 ## Installation
 
 ```bash
-pip install stpp_tplot
+pip install stpp_tplot==0.1.5
+```
+## Usage
+```python
+from stpp_tplot import mp, sd, op
+from pyspedas.erg import pwe_ofa, mgf, orb
+
+# Load data
+trange = ['2017-03-27', '2017-03-28']
+pwe_ofa(trange=trange)
+mgf(trange=trange)
+orb(trange=trange)
+
+# Plot data
+mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt')

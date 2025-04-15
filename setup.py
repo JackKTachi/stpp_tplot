@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
-import stpp_tplot
+# import stpp_tplot
 
 setup(
     name='stpp_tplot',  # パッケージ名 (pip install で使う名前)
-    version=stpp_tplot.__version__,  # バージョン (Semantic Versioning に従うことを推奨)
+    version='0.1.5',  # バージョン (Semantic Versioning に従うことを推奨)
     packages=find_packages(),  # パッケージを自動検出 (stpp_tplotディレクトリ内)
     # package_dir={'': 'stpp_tplot'}, # パッケージのルートディレクトリを指定
     install_requires=[  # 依存するライブラリ
