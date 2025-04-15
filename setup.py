@@ -4,13 +4,13 @@ import stpp_tplot
 setup(
     name='stpp_tplot',  # パッケージ名 (pip install で使う名前)
     version=stpp_tplot.__version__,  # バージョン (Semantic Versioning に従うことを推奨)
-    packages=['stpp_tplot'],  # パッケージを自動検出 (stpp_tplotディレクトリ内)
+    packages=find_packages(),  # パッケージを自動検出 (stpp_tplotディレクトリ内)
     # package_dir={'': 'stpp_tplot'}, # パッケージのルートディレクトリを指定
     install_requires=[  # 依存するライブラリ
-        'matplotlib==3.10.1',
-        'pyspedas==1.7.19',
-        'pytz==2025.2',
-        'numpy==2.2.4',
+        'matplotlib',
+        'pyspedas',
+        'pytz',
+        'numpy',
     ],
     author='Kohki Tachi',  # あなたの名前 (作者名)
     author_email='ktachiresearch@gmail.com',  # あなたのメールアドレス (作者メールアドレス)
