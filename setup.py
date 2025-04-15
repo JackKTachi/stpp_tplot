@@ -4,8 +4,8 @@ import stpp_tplot
 setup(
     name='stpp_tplot',  # パッケージ名 (pip install で使う名前)
     version=stpp_tplot.__version__,  # バージョン (Semantic Versioning に従うことを推奨)
-    packages=find_packages(where='stpp_tplot'),  # パッケージを自動検出 (stpp_tplotディレクトリ内)
-    package_dir={'': 'stpp_tplot'}, # パッケージのルートディレクトリを指定
+    packages=['stpp_tplot'],  # パッケージを自動検出 (stpp_tplotディレクトリ内)
+    # package_dir={'': 'stpp_tplot'}, # パッケージのルートディレクトリを指定
     install_requires=[  # 依存するライブラリ
         'matplotlib==3.10.1',
         'pyspedas==1.7.19',
