@@ -13,10 +13,10 @@ Classifier: Intended Audience :: Science/Research
 Classifier: Topic :: Scientific/Engineering :: Visualization
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: matplotlib==3.10.1
-Requires-Dist: pyspedas==1.7.19
-Requires-Dist: pytz==2025.2
-Requires-Dist: numpy==2.2.4
+Requires-Dist: matplotlib
+Requires-Dist: pyspedas
+Requires-Dist: pytz
+Requires-Dist: numpy
 Dynamic: author
 Dynamic: author-email
 Dynamic: classifier
