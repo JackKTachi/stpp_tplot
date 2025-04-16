@@ -29,3 +29,4 @@ orb(trange=trange)
 
 # Plot data
 mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt')
+![alt text](image/image.png)
