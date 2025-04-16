@@ -31,7 +31,7 @@ orb(trange=trange)
 # Plot data
 mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt')
 ```
-![alt text](image.png)
+![alt text](images/image.png)
 
 If you do not need the orbit parameter labels, var_label can be set to None.
 
@@ -48,18 +48,19 @@ mp(['erg_pwe_ofa_l2_spec_B_spectra_132'], var_label=None)
 ![alt text](images/image-4.png)
 
 Following are the available options for the `op` function:
- * y_label: y軸ラベル (yaxis_opt -> axis_label)
- * ylog: y軸タイプ (yaxis_opt -> y_axis_type)
- * y_range: y軸レンジ (yaxis_opt -> y_range)
- * axis_subtitle: y軸サブタイトル (yaxis_opt -> axis_subtitle)
- * z_range: z軸レンジ (zaxis_opt -> z_range)
- * zlog: z軸タイプ (zaxis_opt -> z_axis_type)
- * spec: spec 値 (extras -> spec)
- * colormap: colormap (extras -> colormap)
- * legend_names: legend_names (yaxis_opt -> legend_names)
- * line_color: line_color (line_opt -> line_color)
- * line_width: line_width (line_opt -> line_width)
- * line_style: line_style (line_opt -> line_style)
+ * y_label: y axis label (str, optional)
+ * ylog: y axis type (bool, optional)
+ * y_range: y axis range (list, optional)
+ * axis_subtitle: axis subtitle (str, optional)
+ * zlog: z axis type (bool, optional)
+ * z_range: z axis range (list, optional)
+ * z_label: z axis label (str, optional)
+ * spec: spectrogram (0 or 1, optional)
+ * colormap: colormap (list, optional)
+ * legend_names: legend names (list, optional)
+ * line_color: line color (str, optional)
+ * line_width: line width (int, optional)
+ * line_style: line style (str, optional)
 
 ### Storing Data: sd
 ```python
