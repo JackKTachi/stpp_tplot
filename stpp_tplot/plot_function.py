@@ -223,7 +223,13 @@ def mp(variables,
             single_plot_内部関数(ax, variable_group, common_trange, cax=cax) # 凡例ラベルはデフォルトのNone
 
         ax.set_xlabel('')
-        ax.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=False)
+        if var_label is not None:
+          ax.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=False)
+        else:
+          if plot_index == num_plots - 1:
+            ax.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True)
+          else:
+            ax.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=False)
         plot_index += 1 # プロットインデックスをインクリメント
 
 
