@@ -1,6 +1,5 @@
 .venv/
-stpp_tplot/__pycache__/
 build/
 dist/
-# stpp_tplot/__pycache__/
+stpp_tplot/__pycache__/
 stpp_tplot/stpp_tplot.egg-info/
