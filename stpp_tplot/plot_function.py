@@ -31,18 +31,35 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
     ax.set_ylim(data.plot_options['yaxis_opt']['y_range'][0], data.plot_options['yaxis_opt']['y_range'][1])
 
     """ case for no spec_bins """
+    # data.plot_options['line_opt']が存在しない場合のif文
+    if 'line_opt' not in data.plot_options:
+      lc = None
+      lw = None
+      ls = None
+    else:
+      if 'line_color' not in data.plot_options['line_opt']:
+        lc = None
+      else:
+        lc = data.plot_options['line_opt']['line_color']
+      if 'line_width' not in data.plot_options['line_opt']:
+        lw = None
+      else:
+        lw = data.plot_options['line_opt']['line_width']
+      if 'line_style' not in data.plot_options['line_opt']:
+        ls = None
+      else:
+        ls = data.plot_options['line_opt']['line_style']
     spec_value = data.attrs.get('plot_options', {}).get('extras', {}).get('spec')
     legend_names = data.attrs.get('plot_options', {}).get('yaxis_opt', {}).get('legend_names')
     if spec_value is None or spec_value == 0:
         if legend_names is not None:
-            print(data.plot_options['line_opt']['line_color'])
             if legend_label is not None: # legend_label が指定されている場合のみ label を設定
-                ax.plot(data.time, data, label=legend_label, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+                ax.plot(data.time, data, label=legend_label, c =lc, lw=lw, ls=ls)
             else:
-                ax.plot(data.time, data, label=legend_names, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+                ax.plot(data.time, data, label=legend_names, c =lc, lw=lw, ls=ls)
             ax.legend() # 凡例を表示
         else:
-            ax.plot(data.time, data, label=data.plot_options['yaxis_opt']['legend_names'], c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+            ax.plot(data.time, data, label=data.plot_options['yaxis_opt']['legend_names'], c =lc, lw=lw, ls=ls)
 
     ### case for spectrpgram ###
     elif data.plot_options['extras']['spec'] == 1:
@@ -64,15 +81,13 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
         list_values = data.spec_bins.values.tolist()
         str_list = [str(item)+' '+data.data_att['depend_1_units'] for item in list_values]
         if legend_names is not None:
-            print(data.plot_options['line_opt']['line_color'])
             if legend_label is not None: # legend_label が指定されている場合のみ label を設定
-                ax.plot(data.time, data, label=legend_label, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+                ax.plot(data.time, data, label=legend_label, c =lc, lw=lw, ls=ls)
             else:
-                ax.plot(data.time, data, label=legend_names, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+                ax.plot(data.time, data, label=legend_names, c =lc, lw=lw, ls=ls)
             ax.legend() # 凡例を表示
         else:
-            print(data.plot_options['line_opt']['line_color'])
-            ax.plot(data.time, data, label=str_list, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+            ax.plot(data.time, data, label=str_list, c =lc, lw=lw, ls=ls)
             ax.legend()
     else:
         raise ValueError("unexpected spec value")
