@@ -11,7 +11,7 @@ from pyspedas import tplot, data_quants, store_data
 # variable = 'erg_pwe_ofa_l2_spec_B_spectra_132'
 # variable = 'erg_mgf_l2_mag_8sec_sm'
 
-def single_plot_内部関数(ax, variable, common_trange, cax=None): # cax: colorbar axes を追加
+def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label=None): # legend_label 引数を追加、デフォルトはNone
     data = data_quants[variable]
 
     """ x axix """
@@ -30,15 +30,21 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None): # cax: colo
 
     ax.set_ylim(data.plot_options['yaxis_opt']['y_range'][0], data.plot_options['yaxis_opt']['y_range'][1])
 
-    """ z axix """
+    """ case for no spec_bins """
     spec_value = data.attrs.get('plot_options', {}).get('extras', {}).get('spec')
     legend_names = data.attrs.get('plot_options', {}).get('yaxis_opt', {}).get('legend_names')
     if spec_value is None or spec_value == 0:
         if legend_names is not None:
-            ax.plot(data.time, data, label=legend_names)
-            ax.legend()
+            print(data.plot_options['line_opt']['line_color'])
+            if legend_label is not None: # legend_label が指定されている場合のみ label を設定
+                ax.plot(data.time, data, label=legend_label, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+            else:
+                ax.plot(data.time, data, label=legend_names, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+            ax.legend() # 凡例を表示
         else:
-            ax.plot(data.time, data)
+            ax.plot(data.time, data, label=data.plot_options['yaxis_opt']['legend_names'], c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+
+    ### case for spectrpgram ###
     elif data.plot_options['extras']['spec'] == 1:
         cmap = data.plot_options['extras']['colormap'][0]
         if data.plot_options['zaxis_opt']['z_axis_type'] == 1 or data.plot_options['zaxis_opt']['z_axis_type'] == 'log':
@@ -53,14 +59,23 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None): # cax: colo
         else: # colorbar axes が指定されていない場合は、axes に隣接して描画 (以前の動作)
             fig = plt.gcf()
             fig.colorbar(mesh, ax=ax, label=data.plot_options['zaxis_opt']['axis_label'])
+
     elif data.plot_options['extras']['spec'] == 0:
         list_values = data.spec_bins.values.tolist()
         str_list = [str(item)+' '+data.data_att['depend_1_units'] for item in list_values]
-        ax.plot(data.time, data, label=str_list)
-        ax.legend()
+        if legend_names is not None:
+            print(data.plot_options['line_opt']['line_color'])
+            if legend_label is not None: # legend_label が指定されている場合のみ label を設定
+                ax.plot(data.time, data, label=legend_label, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+            else:
+                ax.plot(data.time, data, label=legend_names, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+            ax.legend() # 凡例を表示
+        else:
+            print(data.plot_options['line_opt']['line_color'])
+            ax.plot(data.time, data, label=str_list, c =data.plot_options['line_opt']['line_color'], lw=data.plot_options['line_opt']['line_width'], ls=data.plot_options['line_opt']['line_style'])
+            ax.legend()
     else:
         raise ValueError("unexpected spec value")
-
 
 def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size):
     ax.spines["top"].set_visible(False)
@@ -119,11 +134,12 @@ def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size):
         )
 
 
+
 def mp(variables,
        var_label=None,
+       font_size=10,
        xsize=10,
-       ysize=2,
-       font_size=10): # mulplot の略
+       ysize=2,):
 
     if not isinstance(variables, list):
         variables = [variables]
@@ -143,28 +159,57 @@ def mp(variables,
     end_times = []
     has_spec = [] # スペクトログラムプロットかどうかを記録するリスト
     for variable in variables:
-        data = data_quants[variable]
-        trange = data.plot_options['trange']
-        start_times.append(trange[0])
-        end_times.append(trange[1])
-        spec_value = data.attrs.get('plot_options', {}).get('extras', {}).get('spec')
-        has_spec.append(spec_value == 1) # spec == 1 なら True, それ以外 (None, 0) なら False
+        if isinstance(variable, list):
+          for var in variable:
+            data = data_quants[var]
+            trange = data.plot_options['trange']
+            start_times.append(trange[0])
+            end_times.append(trange[1])
+            spec_value = data.attrs.get('plot_options', {}).get('extras', {}).get('spec')
+            if not spec_value == 1:
+                pass
+            else:
+                has_spec.append(True)
+                break
+          if has_spec == []:
+            has_spec.append(False)
+        else:
+            data = data_quants[variable]
+            trange = data.plot_options['trange']
+            start_times.append(trange[0])
+            end_times.append(trange[1])
+            spec_value = data.attrs.get('plot_options', {}).get('extras', {}).get('spec')
+            has_spec.append(spec_value == 1) # spec == 1 なら True, それ以外 (None, 0) なら False
 
     common_start_time = min(start_times)
     common_end_time = max(end_times)
     common_trange = [common_start_time, common_end_time]
 
     axes_list = [] # 後で sharex するために axes をリストに保存
-    for i, variable in enumerate(variables):
-        ax = fig.add_subplot(gs[i, 0]) # axes 用の subplot を追加 (左側の列)
+    plot_index = 0 # プロットのインデックス
+    for i, variable_group in enumerate(variables): # 変数リストをループ処理。variable_group は変数または変数リスト
+        ax = fig.add_subplot(gs[plot_index, 0]) # axes 用の subplot を追加 (左側の列)
         axes_list.append(ax)
         cax = None # colorbar axes を初期化
-        if has_spec[i]: # スペクトログラムプロットの場合
-            cax = fig.add_subplot(gs[i, 1]) # colorbar 用の subplot を追加 (右側の列)
-        single_plot_内部関数(ax, variable, common_trange, cax=cax) # cax を渡す
+        if has_spec[plot_index]: # スペクトログラムプロットの場合
+            cax = fig.add_subplot(gs[plot_index, 1]) # colorbar 用の subplot を追加 (右側の列)
+        # if isinstance(variable_group, list):
+        #   for var in variable_group:
+            # cax = fig.add_subplot(gs[plot_index, 1]) # colorbar 用の subplot を追加 (右側の列)
+
+        if isinstance(variable_group, list): # variable_group がリストの場合 (オーバーラッププロット)
+            for j, variable in enumerate(variable_group): # 内側の変数をループ処理
+                if j == 0:
+                    legend_label = str(variable_group) # 最初の変数に凡例ラベルを設定 (変数リスト自体をラベルにする)
+                else:
+                    legend_label = None # 2番目以降の変数は凡例ラベルなし
+                single_plot_内部関数(ax, variable, common_trange, cax=cax, legend_label=legend_label) # 凡例ラベルを渡す
+        else: # variable_group がリストでない場合 (通常のプロット)
+            single_plot_内部関数(ax, variable_group, common_trange, cax=cax) # 凡例ラベルはデフォルトのNone
 
         ax.set_xlabel('')
         ax.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=False)
+        plot_index += 1 # プロットインデックスをインクリメント
 
 
     # x軸を共有
@@ -189,7 +234,7 @@ def mp(variables,
     # plt.tight_layout() # レイアウト調整
     plt.subplots_adjust(hspace=0.1) # グラフ間のスペースを調整
     plt.show()
-
+    
 def op(variable_name,
                       y_label=None,
                       ylog=None,
@@ -304,6 +349,8 @@ def op(variable_name,
     if z_label is not None:
       plot_options['zaxis_opt']['axis_label'] = z_label
 
+  if 'line_opt' not in plot_options:
+    plot_options['line_opt'] = {}
   if 'line_opt' in plot_options and isinstance(plot_options['line_opt'], dict):
     if 'line_color' not in plot_options['line_opt']:
       plot_options['line_opt']['line_color'] = line_color
