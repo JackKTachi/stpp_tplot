@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: stpp_tplot
-Version: 0.2.1
+Version: 0.2.2
 Summary: Simple time series plotting library based on pyspedas and matplotlib.
 Home-page: https://github.com/JackKTachi/stpp_tplot
 Author: Kohki Tachi
@@ -75,6 +75,11 @@ mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label=No
 time_range = ['2017-03-27 21:00:00', '2017-03-27 21:30:00']
 mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt', tr=time_range)
 ```
+or
+```python
+xlim(time_range)
+mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt')
+```
 ![alt text](images/image-13.png)
 
 ### Plotting with custom options: op & mp
@@ -126,3 +131,7 @@ mp([['fc', '05fc']])
 mp([['fc', 'erg_pwe_ofa_l2_spec_B_spectra_132'], 'fc'], var_label='erg_orb_l2_pos_rmlatmlt')
 ```
 ![alt text](images/image-12.png)
+
+### mp options
+ * yauto(bool): if True, the y axis range will be set automatically
+ * zauto(bool): if True, the z axis range will be set automatically
