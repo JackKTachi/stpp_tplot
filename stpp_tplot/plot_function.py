@@ -14,22 +14,16 @@ def parse_datetime_flexible(ts):
 
 def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label=None): # legend_label 引数を追加、デフォルトはNone
     data = data_quants[variable]
-    op(variable)
-    # if hasattr(data, 'spec_bins'):
-    #     temp_data = data.values
-    #     cleaned_data = temp_data[np.isfinite(data.values)]
-    #     print(cleaned_data.min(), cleaned_data.max())
-    #     op(variable, ylog=1, zlog=1, y_range=[data.spec_bins.values.min(), data.spec_bins.values.max()], z_range=[np.min(cleaned_data), np.max(cleaned_data)])
-    # else:
-    #     op(variable, ylog=0, y_range=[data.min(), data.max()])
+    initialize_plot_options(variable)
 
     """ x axix """
-    if isinstance(common_trange[0], str):
-      datatime_range_utc = [parse_datetime_flexible(ts) for ts in common_trange]
-      ax.set_xlim(datatime_range_utc[0], datatime_range_utc[1])
-      print(datatime_range_utc[0], datatime_range_utc[1])
+    if common_trange is not None:
+      if isinstance(common_trange[0], str):
+        datatime_range_utc = [parse_datetime_flexible(ts) for ts in common_trange]
+        ax.set_xlim(datatime_range_utc[0], datatime_range_utc[1])
     else:    
       utc_timezone = pytz.utc
+      print(common_trange)
       datetime_range_utc = [datetime.datetime.fromtimestamp(ts, tz=utc_timezone) for ts in common_trange]
       # print(datetime_range_utc)
       ax.set_xlim(datetime_range_utc[0], datetime_range_utc[1])
@@ -214,9 +208,9 @@ def mp(variables,
             spec_value = data.attrs.get('plot_options', {}).get('extras', {}).get('spec')
             has_spec.append(spec_value == 1) # spec == 1 なら True, それ以外 (None, 0) なら False
 
-    if trange is not None:
+    if tr is not None:
         common_trange = tr
-    elif trange is None:
+    elif trange is None or tr is None or trange == '':
         common_start_time = min(start_times)
         common_end_time = max(end_times)
         common_trange = [common_start_time, common_end_time]
@@ -266,7 +260,7 @@ def mp(variables,
         xaxis_ticks_num = axes_list[-1].get_xticks().tolist() # 数値形式の ticks
         utc_timezone = pytz.utc
         xaxis_ticks_dt = [
-            pytz.utc.localize(datetime.datetime(*mdates.num2date(tick_val).timetuple()[:6])) # Convert to naive datetime first then localize
+            pytz.utc.localize(datetime(*mdates.num2date(tick_val).timetuple()[:6])) # Convert to naive datetime first then localize
             for tick_val in xaxis_ticks_num
         ]  # numeric ticks to timezone-aware datetime
 
@@ -409,6 +403,61 @@ def op(variable_name,
 
   return
 
+def initialize_plot_options(variable_name):
+    """
+    data_quants[variable_name] に plot_options とその下層キーを、
+    存在しないものだけ空値で初期化する。
+    """
+    data = data_quants[variable_name]
+
+    # plot_options 自体の初期化
+    if not hasattr(data, 'plot_options') or not isinstance(data.plot_options, dict):
+        data.plot_options = {}
+
+    plot_options = data.plot_options
+
+    # extras の初期化
+    plot_options.setdefault('extras', {})
+    extras_defaults = {
+        'spec': None,       # int or None
+        'colormap': []      # list
+    }
+    for key, default in extras_defaults.items():
+        plot_options['extras'].setdefault(key, default)
+
+    # yaxis_opt の初期化
+    plot_options.setdefault('yaxis_opt', {})
+    yaxis_defaults = {
+        'axis_label': '',           # str
+        'y_axis_type': None,        # bool
+        'y_range': None,            # list
+        'axis_subtitle': '',        # str
+        'legend_names': []          # list
+    }
+    for key, default in yaxis_defaults.items():
+        plot_options['yaxis_opt'].setdefault(key, default)
+
+    # zaxis_opt の初期化
+    plot_options.setdefault('zaxis_opt', {})
+    zaxis_defaults = {
+        'z_range': None,            # list
+        'z_axis_type': None,        # bool
+        'axis_label': '',           # str
+        'axis_subtitle': ''         # str
+    }
+    for key, default in zaxis_defaults.items():
+        plot_options['zaxis_opt'].setdefault(key, default)
+
+"""     # line_opt の初期化
+    plot_options.setdefault('line_opt', {})
+    line_defaults = {
+        'line_color': None,         # str
+        'line_width': None,         # int
+        'line_style': ''            # str
+    }
+    for key, default in line_defaults.items():
+        plot_options['line_opt'].setdefault(key, default)
+ """
 from pyspedas import store_data
 def sd(variable_name, data): # store_data の略
     store_data(variable_name, data=data)
