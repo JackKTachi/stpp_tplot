@@ -5,19 +5,34 @@ import pytz
 import matplotlib.gridspec as gridspec
 import matplotlib.dates as mdates # Import matplotlib.dates
 import numpy as np
-
+from datetime import datetime
+from dateutil import parser
 from pyspedas import tplot, data_quants, store_data
 
-# variable = 'erg_pwe_ofa_l2_spec_B_spectra_132'
-# variable = 'erg_mgf_l2_mag_8sec_sm'
+def parse_datetime_flexible(ts):
+    return parser.isoparse(ts)
 
 def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label=None): # legend_label 引数を追加、デフォルトはNone
     data = data_quants[variable]
+    op(variable)
+    # if hasattr(data, 'spec_bins'):
+    #     temp_data = data.values
+    #     cleaned_data = temp_data[np.isfinite(data.values)]
+    #     print(cleaned_data.min(), cleaned_data.max())
+    #     op(variable, ylog=1, zlog=1, y_range=[data.spec_bins.values.min(), data.spec_bins.values.max()], z_range=[np.min(cleaned_data), np.max(cleaned_data)])
+    # else:
+    #     op(variable, ylog=0, y_range=[data.min(), data.max()])
 
     """ x axix """
-    utc_timezone = pytz.utc
-    datetime_range_utc = [datetime.datetime.fromtimestamp(ts, tz=utc_timezone) for ts in common_trange]
-    ax.set_xlim(datetime_range_utc[0], datetime_range_utc[1])
+    if isinstance(common_trange[0], str):
+      datatime_range_utc = [parse_datetime_flexible(ts) for ts in common_trange]
+      ax.set_xlim(datatime_range_utc[0], datatime_range_utc[1])
+      print(datatime_range_utc[0], datatime_range_utc[1])
+    else:    
+      utc_timezone = pytz.utc
+      datetime_range_utc = [datetime.datetime.fromtimestamp(ts, tz=utc_timezone) for ts in common_trange]
+      # print(datetime_range_utc)
+      ax.set_xlim(datetime_range_utc[0], datetime_range_utc[1])
 
     """ y axix """
     if data.plot_options['yaxis_opt']['axis_subtitle'] is not None or data.plot_options['yaxis_opt']['axis_subtitle'] != '':
@@ -59,7 +74,7 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
                 ax.plot(data.time, data, label=legend_names, c =lc, lw=lw, ls=ls)
             ax.legend() # 凡例を表示
         else:
-            ax.plot(data.time, data, label=data.plot_options['yaxis_opt']['legend_names'], c =lc, lw=lw, ls=ls)
+            ax.plot(data.time, data, c =lc, lw=lw, ls=ls)
 
     ### case for spectrpgram ###
     elif data.plot_options['extras']['spec'] == 1:
@@ -115,6 +130,8 @@ def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size):
 
     for i_component in range(num_components):
         orbit_values = []
+        if component_labels[i_component] is None:
+            component_labels[i_component] = f"Component {i_component + 1}"
         for tick_dt in xaxis_ticks:
             # Convert tick_dt to timezone-naive datetime to match orbit_data.time.values
             tick_dt_naive = tick_dt.replace(tzinfo=None) # Make tick_dt timezone-naive
@@ -154,7 +171,8 @@ def mp(variables,
        var_label=None,
        font_size=10,
        xsize=10,
-       ysize=2,):
+       ysize=2,
+       tr=None):
 
     if not isinstance(variables, list):
         variables = [variables]
@@ -196,9 +214,12 @@ def mp(variables,
             spec_value = data.attrs.get('plot_options', {}).get('extras', {}).get('spec')
             has_spec.append(spec_value == 1) # spec == 1 なら True, それ以外 (None, 0) なら False
 
-    common_start_time = min(start_times)
-    common_end_time = max(end_times)
-    common_trange = [common_start_time, common_end_time]
+    if trange is not None:
+        common_trange = tr
+    elif trange is None:
+        common_start_time = min(start_times)
+        common_end_time = max(end_times)
+        common_trange = [common_start_time, common_end_time]
 
     axes_list = [] # 後で sharex するために axes をリストに保存
     plot_index = 0 # プロットのインデックス
@@ -396,3 +417,12 @@ def sd(variable_name, data): # store_data の略
         op(variable_name, ylog=1, zlog=1, y_range=[data.spec_bins.values.min(), data.spec_bins.values.max()], z_range=[data.values.min(), data.values.max()])
     else:
         op(variable_name, ylog=0, y_range=[data.min(), data.max()])
+
+def split_vec(variable):
+    data = data_quants[variable]
+    data.shape[1]
+    for i in range(data.shape[1]):
+        data_temp = data[:,i]
+        sd('{}_{}'.format(variable, i), data={'x': data['time'], 'y': data_temp})
+
+
