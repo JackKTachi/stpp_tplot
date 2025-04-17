@@ -103,7 +103,7 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
                   ax.plot(data.time, data[:, i], label=legend_names[i], c =lc[i], lw=lw, ls=ls)
               else:
                 ax.plot(data.time, data, label=legend_names, c =lc, lw=lw, ls=ls)
-            ax.legend() # 凡例を表示
+            ax.legend(loc='upper right') # 凡例を表示
           else:
             if isinstance(lc, list):
               for i in range(len(data[0])):
@@ -148,7 +148,7 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
                   ax.plot(data.time, data, label=legend_label, c =lc, lw=lw, ls=ls)
               else:
                   ax.plot(data.time, data, label=legend_names, c =lc, lw=lw, ls=ls)
-              ax.legend()
+              ax.legend(loc='upper right')
           else:
             if legend_names != []:
               for i in range(data.shape[1]):
@@ -156,14 +156,15 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
                   ax.plot(data.time, data, label=legend_label, c =lc[i], lw=lw, ls=ls)
                 else:
                   ax.plot(data.time, data, label=legend_names, c =lc[i], lw=lw, ls=ls)
-              ax.legend()
+              ax.legend(loc='upper right')
             else:
               for i in range(data.shape[1]):
                 ax.plot(data.time, data, c =lc[i], lw=lw, ls=ls)
     else:
         raise ValueError("unexpected spec value")
 
-def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size):
+def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size,
+                      y_memory_step, y_memory_base, y_orb_lim_max):
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
@@ -171,9 +172,9 @@ def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size):
     ax.tick_params(
         axis="y", which="both", length=0, pad=10, labelsize=10, left=False, labelleft=False
     )
-    ax.set_ylim(0.0, 1.0) # y軸範囲を調整 (ラベルが収まるように)
+    ax.set_ylim(0.0, y_orb_lim_max) # y軸範囲を調整 (ラベルが収まるように)
 
-    y_base = 0.2 # 全体の垂直位置調整用 (必要に応じて変更)
+    y_base = y_memory_base # 全体の垂直位置調整用 (必要に応じて変更)
 
     xmin, xmax = ax.get_xlim()
 
@@ -181,7 +182,7 @@ def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size):
     num_components = orbit_data.shape[1] if len(orbit_data.shape) > 1 else 1
 
     # 各ラベルの固定 y 座標
-    y_step = 0.3
+    y_step = y_memory_step
     y_positions = [y_base + 2*y_step, y_base + 1*y_step, y_base + 0*y_step] # R, MLAT, MLT の y 座標を固定
 
     for i_component in range(num_components):
@@ -213,7 +214,7 @@ def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size):
         # y軸ラベル (R, MLAT, MLT)
         ax.text(
             -0.03,
-            y_pos,
+            y_pos/y_orb_lim_max,
             component_labels[i_component],
             fontsize=font_size,
             ha="right",
@@ -230,13 +231,15 @@ def mp(variables,
        ysize=2,
        tr=None,
        yauto=None,
-       zauto=None):
+       zauto=None,
+       orb_label_width=0.6,hspace=0.1,
+       y_memory_step=0.5, y_memory_base=0.2, y_orb_lim_max=1.5):
 
     if not isinstance(variables, list):
         variables = [variables]
     num_plots = len(variables)
     fig = plt.figure(figsize=(xsize, ysize * (num_plots + 1))) # Figure を作成 (orbit row を追加)
-    gs = gridspec.GridSpec(num_plots + 1, 2, height_ratios=[1]*num_plots + [0.3], width_ratios=[80, 1], hspace=0.1, wspace=0.05) # GridSpec (orbit row を追加, height_ratios調整)
+    gs = gridspec.GridSpec(num_plots + 1, 2, height_ratios=[1]*num_plots + [orb_label_width], width_ratios=[80, 1], hspace=hspace, wspace=0.05) # GridSpec (orbit row を追加, height_ratios調整)
 
     plt.rcParams['font.size'] = font_size
     plt.rcParams['axes.titlesize'] = font_size
@@ -328,7 +331,7 @@ def mp(variables,
             for tick_val in xaxis_ticks_num
         ]  # numeric ticks to timezone-aware datetime
 
-        orbit_label_panel(orbit_ax, orbit_data, xaxis_ticks_dt, font_size) # orbit label panel を描画
+        orbit_label_panel(orbit_ax, orbit_data, xaxis_ticks_dt, font_size, y_memory_step, y_memory_base, y_orb_lim_max) # orbit label panel を描画
         orbit_ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=True) # orbit_ax の x軸目盛りとラベルを表示
 
     # plt.tight_layout() # レイアウト調整
@@ -595,4 +598,52 @@ def split_vec(variable):
         data_temp = data[:,i]
         sd('{}_{}'.format(variable, i), data={'x': data['time'], 'y': data_temp})
 
+import io
+import contextlib
+from pyspedas import tplot_names
 
+def xlim(tr):
+    with contextlib.redirect_stdout(io.StringIO()):
+        tplot_list = tplot_names()
+    for i in range(len(tplot_list)):
+        key = tplot_list[i]
+        try:
+            data = data_quants[key]
+            plot_options = data.plot_options  # ここで AttributeError チェック
+        except KeyError:
+            # print('no such key in data_quants: {}'.format(key))
+            continue
+        except AttributeError:
+            # print('no plot_options: {}'.format(key))
+            continue
+        
+        initialize_plot_options(key)
+        plot_options['trange'] = tr
+        data = data.sel(time=slice(tr[0], tr[1]))  # 時間範囲でデータをスライス
+        try:
+            if hasattr(data, 'spec_bins'):
+                if data.plot_options['extras']['spec'] == 1:
+                    y_bins = data.spec_bins.values
+                    cleaned_data = y_bins[np.isfinite(y_bins)]
+                    if cleaned_data.size == 0:
+                        print("No finite values found in {} data.".format(key))
+                    data.plot_options['yaxis_opt']['y_range'] = [cleaned_data.min(), cleaned_data.max()]
+                    cleaned_data = data.values[np.isfinite(data.values)]
+                    if cleaned_data.size == 0:
+                        print("No finite values found in {} data.".format(key))
+                    data.plot_options['zaxis_opt']['z_range'] = [cleaned_data.min(), cleaned_data.max()] 
+                elif data.plot_options['extras']['spec'] == 0:
+                    cleaned_data = data.values[np.isfinite(data.values)]
+                    if cleaned_data.size == 0:
+                        print("No finite values found in {} data.".format(key))
+                    data.plot_options['yaxis_opt']['y_range'] = [cleaned_data.min()*0.9, cleaned_data.max()*1.1]
+                    # print(cleaned_data.min(), cleaned_data.max())
+
+            else:
+                cleaned_data = data.values[np.isfinite(data.values)]
+                if cleaned_data.size == 0:
+                    print("No finite values found in {} data.".format(key))
+                data.plot_options['yaxis_opt']['y_range'] = [cleaned_data.min()*0.9, cleaned_data.max()*1.1]
+        except Exception as e:
+            print(f"Error processing {key}: {e}")
+            continue

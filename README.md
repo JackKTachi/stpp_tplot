@@ -45,6 +45,11 @@ mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label=No
 time_range = ['2017-03-27 21:00:00', '2017-03-27 21:30:00']
 mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt', tr=time_range)
 ```
+or
+```python
+xlim(time_range)
+mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt')
+```
 ![alt text](images/image-13.png)
 
 ### Plotting with custom options: op & mp
