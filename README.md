@@ -96,3 +96,7 @@ mp([['fc', '05fc']])
 mp([['fc', 'erg_pwe_ofa_l2_spec_B_spectra_132'], 'fc'], var_label='erg_orb_l2_pos_rmlatmlt')
 ```
 ![alt text](images/image-12.png)
+
+### mp options
+ * yauto(bool): if True, the y axis range will be set automatically
+ * zauto(bool): if True, the z axis range will be set automatically
