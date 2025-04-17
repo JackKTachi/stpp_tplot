@@ -40,6 +40,13 @@ mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label=No
 ```
 ![alt text](images/image-3.png)
 
+### Setting the time range
+```python
+time_range = ['2017-03-27 21:00:00', '2017-03-27 21:30:00']
+mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt', tr=time_range)
+```
+![alt text](images/image-13.png)
+
 ### Plotting with custom options: op & mp
 ```python
 op('erg_pwe_ofa_l2_spec_B_spectra_132', ylog=0, zlog=1, z_range=[1e-4, 1e2], colormap='viridis')
