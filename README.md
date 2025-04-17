@@ -14,7 +14,7 @@ Simple time series plotting library based on pyspedas and matplotlib.
 ## Installation
 
 ```bash
-pip install stpp_tplot==0.2.0
+pip install stpp_tplot
 ```
 ## Usage
 ### Plotting with default options: mp
