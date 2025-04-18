@@ -164,7 +164,7 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
         raise ValueError("unexpected spec value")
 
 def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size,
-                      y_memory_step, y_memory_base, y_orb_lim_max):
+                      y_tick_step, y_tick_base, y_orb_lim_max):
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
@@ -174,7 +174,7 @@ def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size,
     )
     ax.set_ylim(0.0, y_orb_lim_max) # y軸範囲を調整 (ラベルが収まるように)
 
-    y_base = y_memory_base # 全体の垂直位置調整用 (必要に応じて変更)
+    y_base = y_tick_base # 全体の垂直位置調整用 (必要に応じて変更)
 
     xmin, xmax = ax.get_xlim()
 
@@ -182,7 +182,7 @@ def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size,
     num_components = orbit_data.shape[1] if len(orbit_data.shape) > 1 else 1
 
     # 各ラベルの固定 y 座標
-    y_step = y_memory_step
+    y_step = y_tick_step
     y_positions = [y_base + 2*y_step, y_base + 1*y_step, y_base + 0*y_step] # R, MLAT, MLT の y 座標を固定
 
     for i_component in range(num_components):
@@ -228,17 +228,22 @@ def mp(variables,
        xsize=10,
        ysize=2,
        tr=None,
+       plot_title=None, plot_title_fontsize=None,
+       display = True,
        yauto=None,
        zauto=None,
        save_path=None,
-       orb_label_width=0.6,hspace=0.1,
-       y_memory_step=0.5, y_memory_base=0.2, y_orb_lim_max=1.5):
+       orb_label_height=0.6,hspace=0.1,
+       y_tick_step=0.5, y_tick_base=0.1, y_orb_lim_max=None):
+    
+    if y_orb_lim_max is None:
+        y_orb_lim_max = y_tick_step * 3
 
     if not isinstance(variables, list):
         variables = [variables]
     num_plots = len(variables)
     fig = plt.figure(figsize=(xsize, ysize * (num_plots + 1))) # Figure を作成 (orbit row を追加)
-    gs = gridspec.GridSpec(num_plots + 1, 2, height_ratios=[1]*num_plots + [orb_label_width], width_ratios=[80, 1], hspace=hspace, wspace=0.05) # GridSpec (orbit row を追加, height_ratios調整)
+    gs = gridspec.GridSpec(num_plots + 1, 2, height_ratios=[1]*num_plots + [orb_label_height], width_ratios=[80, 1], hspace=hspace, wspace=0.05) # GridSpec (orbit row を追加, height_ratios調整)
 
     plt.rcParams['font.size'] = font_size
     plt.rcParams['axes.titlesize'] = font_size
@@ -311,6 +316,13 @@ def mp(variables,
             ax.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True)
           else:
             ax.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=False)
+        
+        if plot_title is not None:
+            if i == 0:
+                if plot_title_fontsize is not None:
+                    ax.set_title(plot_title, fontsize=plot_title_fontsize)
+                else:
+                    ax.set_title(plot_title, fontsize=font_size)
         plot_index += 1 # プロットインデックスをインクリメント
 
 
@@ -330,7 +342,7 @@ def mp(variables,
             for tick_val in xaxis_ticks_num
         ]  # numeric ticks to timezone-aware datetime
 
-        orbit_label_panel(orbit_ax, orbit_data, xaxis_ticks_dt, font_size, y_memory_step, y_memory_base, y_orb_lim_max) # orbit label panel を描画
+        orbit_label_panel(orbit_ax, orbit_data, xaxis_ticks_dt, font_size, y_tick_step, y_tick_base, y_orb_lim_max) # orbit label panel を描画
         orbit_ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=True) # orbit_ax の x軸目盛りとラベルを表示
 
     # plt.tight_layout() # レイアウト調整
@@ -338,16 +350,20 @@ def mp(variables,
     
     if save_path is not None:
       plt.savefig(save_path)
-    plt.show()
-    
+
+    if display:
+        plt.show()
+    else:
+        plt.close(fig)
+
 # def op(variable_name,
 #                       y_label=None,
 #                       ylog=None,
 #                       y_range=None,
-#                       y_axis_subtitle=None,
+#                       y_sublabel=None,
 #                       z_range=None,
 #                       zlog=None,
-#                       z_axis_subtitle=None,
+#                       z_sublabel=None,
 #                       z_label=None,
 #                       spec=None,
 #                       colormap=None,
@@ -427,8 +443,8 @@ def mp(variables,
 #         plot_options['zaxis_opt']['z_range'] = [data.spec_bins.values.min(), data.spec_bins.values.max()]
 #     if y_range is not None:
 #       plot_options['yaxis_opt']['y_range'] = y_range
-#     if y_axis_subtitle is not None:
-#       plot_options['yaxis_opt']['axis_subtitle'] = y_axis_subtitle
+#     if y_sublabel is not None:
+#       plot_options['yaxis_opt']['axis_subtitle'] = y_sublabel
 
 #   # zaxis_opt の編集
 #   if 'zaxis_opt' not in plot_options:
@@ -449,8 +465,8 @@ def mp(variables,
 #       plot_options['zaxis_opt']['z_range'] = z_range
 #     if zlog is not None:
 #       plot_options['zaxis_opt']['z_axis_type'] = zlog
-#     if z_axis_subtitle is not None:
-#       plot_options['zaxis_opt']['axis_subtitle'] = z_axis_subtitle
+#     if z_sublabel is not None:
+#       plot_options['zaxis_opt']['axis_subtitle'] = z_sublabel
 #     if z_label is not None:
 #       plot_options['zaxis_opt']['axis_label'] = z_label
 
@@ -473,8 +489,8 @@ def mp(variables,
 #   return
 
 def op(variable_name,
-       y_label=None, ylog=None, y_range=None, y_axis_subtitle=None,
-       z_range=None, zlog=None, z_axis_subtitle=None, z_label=None,
+       y_label=None, ylog=None, y_range=None, y_sublabel=None,
+       z_range=None, zlog=None, z_sublabel=None, z_label=None,
        spec=None, colormap=None, legend_names=None,
        line_color=None, line_width=None, line_style=None):
     """
@@ -501,8 +517,8 @@ def op(variable_name,
             plot_options['yaxis_opt']['y_axis_type'] = ylog
         if y_range is not None:
             plot_options['yaxis_opt']['y_range'] = y_range
-        if y_axis_subtitle is not None:
-            plot_options['yaxis_opt']['axis_subtitle'] = y_axis_subtitle
+        if y_sublabel is not None:
+            plot_options['yaxis_opt']['axis_subtitle'] = y_sublabel
 
     # zaxis_opt の編集（存在する場合のみ）
     if 'zaxis_opt' in plot_options and isinstance(plot_options['zaxis_opt'], dict):
@@ -510,8 +526,8 @@ def op(variable_name,
             plot_options['zaxis_opt']['z_range'] = z_range
         if zlog is not None:
             plot_options['zaxis_opt']['z_axis_type'] = zlog
-        if z_axis_subtitle is not None:
-            plot_options['zaxis_opt']['axis_subtitle'] = z_axis_subtitle
+        if z_sublabel is not None:
+            plot_options['zaxis_opt']['axis_subtitle'] = z_sublabel
         if z_label is not None:
             plot_options['zaxis_opt']['axis_label'] = z_label
 

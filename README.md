@@ -68,16 +68,26 @@ Following are the available options for the `op` function:
  * y_label: y axis label (str, optional)
  * ylog: y axis type (bool, optional)
  * y_range: y axis range (list, optional)
- * axis_subtitle: axis subtitle (str, optional)
+ * y_sublabel: axis subtitle (str, optional)
  * zlog: z axis type (bool, optional)
  * z_range: z axis range (list, optional)
  * z_label: z axis label (str, optional)
+ * z_sublabel: axis subtitle (str, optional)
  * spec: spectrogram (0 or 1, optional)
  * colormap: colormap (list, optional)
  * legend_names: legend names (list, optional)
  * line_color: line color (str, optional)
  * line_width: line width (int, optional)
  * line_style: line style (str, optional)
+
+Following are the available options for the `mp` function:
+ * plot_title: plot title (str, optional)
+ * plot_title_fontsize: plot title font size (int, optional)
+ * display: display (bool, optional), if False, the plot will not be displayed
+ * save_path: save path (str, optional), if provided, the plot will be saved to the specified path
+ * hspace: height space between panels (float, optional)
+ * y_tick_step: vertical spacing of the orbit tick marks
+ * orb_label_height: height of the orbit parameter labels
 
 ### Storing Data: sd
 ```python
