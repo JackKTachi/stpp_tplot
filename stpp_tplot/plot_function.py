@@ -222,8 +222,6 @@ def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size,
             transform=ax.transAxes,
         )
 
-
-
 def mp(variables,
        var_label=None,
        font_size=10,
@@ -232,6 +230,7 @@ def mp(variables,
        tr=None,
        yauto=None,
        zauto=None,
+       save_path=None,
        orb_label_width=0.6,hspace=0.1,
        y_memory_step=0.5, y_memory_base=0.2, y_orb_lim_max=1.5):
 
@@ -335,7 +334,10 @@ def mp(variables,
         orbit_ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=True) # orbit_ax の x軸目盛りとラベルを表示
 
     # plt.tight_layout() # レイアウト調整
-    plt.subplots_adjust(hspace=0.1) # グラフ間のスペースを調整
+    plt.subplots_adjust(hspace=0.1)
+    
+    if save_path is not None:
+      plt.savefig(save_path)
     plt.show()
     
 # def op(variable_name,
