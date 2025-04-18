@@ -19,7 +19,7 @@ pip install stpp_tplot
 ## Usage
 ### Plotting with default options: mp
 ```python
-from stpp_tplot import mp, sd, op
+from stpp_tplot import mp, sd, op, xlim
 from pyspedas.erg import pwe_ofa, mgf, orb
 
 # Load data
