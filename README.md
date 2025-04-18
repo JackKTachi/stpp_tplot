@@ -40,9 +40,14 @@ mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label=No
 ```
 ![alt text](images/image-3.png)
 
-### Setting the time range
+### Saving plot: mp(save_path='path')
 ```python
-time_range = ['2017-03-27 21:00:00', '2017-03-27 21:30:00']
+mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt', save_path='my_plot.png')
+```
+
+### Setting the time range: mp(tr=time_range), or xlim(time_range)
+```python
+time_range = ['2017-03-27T21:00:00', '2017-03-27T21:30:00']
 mp(['erg_pwe_ofa_l2_spec_B_spectra_132', 'erg_mgf_l2_mag_8sec_sm'], var_label='erg_orb_l2_pos_rmlatmlt', tr=time_range)
 ```
 or
