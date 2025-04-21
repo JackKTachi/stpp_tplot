@@ -57,7 +57,8 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
           cleaned_data = data.values[np.isfinite(data.values)]
           if cleaned_data.size == 0:
               print("No finite values found in {} data.".format(variable))
-          data.plot_options['zaxis_opt']['z_range'] = [cleaned_data.min(), cleaned_data.max()]
+          non_zero_cleaned_data = cleaned_data[cleaned_data != 0]
+          data.plot_options['zaxis_opt']['z_range'] = [non_zero_cleaned_data.min(), non_zero_cleaned_data.max()]
       else:
         cleaned_data = data.values[np.isfinite(data.values)]
         if cleaned_data.size == 0:
@@ -124,13 +125,15 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
             cleaned_data = data.values[np.isfinite(data.values)]
             if cleaned_data.size == 0:
               print("No finite values found in {} data.".format(variable))
-            data.plot_options['zaxis_opt']['z_range'] = [cleaned_data.min(), cleaned_data.max()]
+            non_zero_cleaned_data = cleaned_data[cleaned_data != 0]
+            data.plot_options['zaxis_opt']['z_range'] = [non_zero_cleaned_data.min(), non_zero_cleaned_data.max()]
         if data.plot_options['zaxis_opt']['z_axis_type'] == 1 or data.plot_options['zaxis_opt']['z_axis_type'] == 'log':
             norm = mcolors.LogNorm(vmin=data.plot_options['zaxis_opt']['z_range'][0], vmax=data.plot_options['zaxis_opt']['z_range'][1])
         else:
             norm = None
 
-        mesh = ax.pcolormesh(data.time, data.spec_bins, data.T, shading='nearest',cmap=cmap, norm=norm)
+        cleaned_xr = data.where(np.isfinite(data), drop=True)
+        mesh = ax.pcolormesh(cleaned_xr.time, cleaned_xr.spec_bins, cleaned_xr.T, shading='nearest',cmap=cmap, norm=norm)
 
         if cax is not None: # colorbar axes が指定されている場合
             plt.colorbar(mesh, cax=cax, label=data.plot_options['zaxis_opt']['axis_label']) # cax に colorbar を描画
@@ -356,138 +359,6 @@ def mp(variables,
     else:
         plt.close(fig)
 
-# def op(variable_name,
-#                       y_label=None,
-#                       ylog=None,
-#                       y_range=None,
-#                       y_sublabel=None,
-#                       z_range=None,
-#                       zlog=None,
-#                       z_sublabel=None,
-#                       z_label=None,
-#                       spec=None,
-#                       colormap=None,
-#                       legend_names=None,
-#                       line_color=None,
-#                       line_width=None,
-#                       line_style=None): # options の略
-#   """
-#   plot_options 辞書を編集し、キーワード引数で指定された項目を上書きします。
-#   'yaxis_opt' に 'legend_names' が存在しない場合は空のリストとして追加します。
-
-#   Args:
-#     plot_options (dict): 編集対象の plot_options 辞書
-#     y_label (str, optional): y軸ラベル (yaxis_opt -> axis_label). Defaults to None.
-#     ylog (bool, optional): y軸タイプ (yaxis_opt -> y_axis_type). Defaults to None.
-#     y_range (list, optional): y軸レンジ (yaxis_opt -> y_range). Defaults to None.
-#     axis_subtitle (str, optional): y軸サブタイトル (yaxis_opt -> axis_subtitle). Defaults to None.
-#     z_range (list, optional): z軸レンジ (zaxis_opt -> z_range). Defaults to None.
-#     zlog (bool, optional): z軸タイプ (zaxis_opt -> z_axis_type). Defaults to None.
-#     spec (int, optional): spec 値 (extras -> spec). Defaults to None.
-#     colormap (list, optional): colormap (extras -> colormap). Defaults to None.
-#     legend_names (list, optional): legend_names (yaxis_opt -> legend_names). Defaults to None.
-#     line_color (str, optional): line_color (line_opt -> line_color). Defaults to None.
-#     line_width (int, optional): line_width (line_opt -> line_width). Defaults to None.
-#     line_style (str, optional): line_style (line_opt -> line_style). Defaults to None.
-#   Returns:
-#     dict: 編集後の plot_options 辞書
-#   """
-#   data = data_quants[variable_name]
-#   plot_options = data.plot_options
-
-
-#   # extras の編集
-#   if 'extras' not in plot_options:
-#     plot_options['extras'] = {}
-#   if 'extras' in plot_options and isinstance(plot_options['extras'], dict):
-#     if 'spec' not in plot_options['extras']:
-#       # もしdata.spec_binsが存在しない場合はspec=0
-#       if hasattr(data, 'spec_bins'): 
-#         plot_options['extras']['spec'] = 1
-#       else:
-#         plot_options['extras']['spec'] = 0
-#     if 'colormap' not in plot_options['extras']:
-#       plot_options['extras']['colormap'] = ['turbo']
-#     if spec is not None:
-#       plot_options['extras']['spec'] = spec
-#     if colormap is not None:
-#       plot_options['extras']['colormap'] = [colormap]
-
-#   # yaxis_opt の編集
-#   if 'yaxis_opt' not in plot_options:
-#     plot_options['yaxis_opt'] = {}
-#   if 'yaxis_opt' in plot_options and isinstance(plot_options['yaxis_opt'], dict):
-#     if 'legend_names' not in plot_options['yaxis_opt']:
-#       plot_options['yaxis_opt']['legend_names'] = []
-#     if 'y_axis_type' not in plot_options['yaxis_opt']:
-#       plot_options['yaxis_opt']['y_axis_type'] = 0
-#     if 'axis_label' not in plot_options['yaxis_opt']:
-#       plot_options['yaxis_opt']['axis_label'] = ''
-#     if 'y_range' not in plot_options['yaxis_opt']:
-#       if not hasattr(data, 'spec_bins'):
-#         plot_options['yaxis_opt']['y_range'] = [data.min(), data.max()]
-#       else:
-#         plot_options['yaxis_opt']['y_range'] = [data.spec_bins.values.min(), data.spec_bins.values.max()]
-#     if 'axis_subtitle' not in plot_options['yaxis_opt']:
-#       plot_options['yaxis_opt']['axis_subtitle'] = ''
-#     if 'legend_names' in plot_options['yaxis_opt']:
-#       plot_options['yaxis_opt']['legend_names'] = legend_names
-#     if y_label is not None:
-#       plot_options['yaxis_opt']['axis_label'] = y_label
-#     if ylog is not None:
-#       plot_options['yaxis_opt']['y_axis_type'] = ylog
-#     if y_range is None:
-#       if plot_options['extras']['spec'] == 0:
-#         plot_options['yaxis_opt']['y_range'] = [data.min(), data.max()]
-#       if plot_options['extras']['spec'] == 1:
-#         plot_options['zaxis_opt']['z_range'] = [data.spec_bins.values.min(), data.spec_bins.values.max()]
-#     if y_range is not None:
-#       plot_options['yaxis_opt']['y_range'] = y_range
-#     if y_sublabel is not None:
-#       plot_options['yaxis_opt']['axis_subtitle'] = y_sublabel
-
-#   # zaxis_opt の編集
-#   if 'zaxis_opt' not in plot_options:
-#     plot_options['zaxis_opt'] = {}
-#   if 'zaxis_opt' in plot_options and isinstance(plot_options['zaxis_opt'], dict):
-#     if 'z_range' not in plot_options['zaxis_opt']:
-#       if hasattr(data, 'spec_bins'):
-#         plot_options['zaxis_opt']['z_range'] = [data.spec_bins.values.min(), data.spec_bins.values.max()]
-#       else:
-#         plot_options['zaxis_opt']['z_range'] = [0, 1]
-#     if 'z_axis_type' not in plot_options['zaxis_opt']:
-#       plot_options['zaxis_opt']['z_axis_type'] = 0
-#     if 'axis_label' not in plot_options['zaxis_opt']:
-#       plot_options['zaxis_opt']['axis_label'] = ''
-#     if 'axis_subtitle' not in plot_options['zaxis_opt']:
-#       plot_options['zaxis_opt']['axis_subtitle'] = ''
-#     if z_range is not None:
-#       plot_options['zaxis_opt']['z_range'] = z_range
-#     if zlog is not None:
-#       plot_options['zaxis_opt']['z_axis_type'] = zlog
-#     if z_sublabel is not None:
-#       plot_options['zaxis_opt']['axis_subtitle'] = z_sublabel
-#     if z_label is not None:
-#       plot_options['zaxis_opt']['axis_label'] = z_label
-
-#   if 'line_opt' not in plot_options:
-#     plot_options['line_opt'] = {}
-#   if 'line_opt' in plot_options and isinstance(plot_options['line_opt'], dict):
-#     if 'line_color' not in plot_options['line_opt']:
-#       plot_options['line_opt']['line_color'] = line_color
-#     if 'line_width' not in plot_options['line_opt']:
-#       plot_options['line_opt']['line_width'] = line_width
-#     if 'line_style' not in plot_options['line_opt']:
-#       plot_options['line_opt']['line_style'] = line_style
-#     if 'line_color' in plot_options['line_opt']:
-#       plot_options['line_opt']['line_color'] = line_color
-#     if 'line_width' in plot_options['line_opt']:
-#       plot_options['line_opt']['line_width'] = line_width
-#     if 'line_style' in plot_options['line_opt']:
-#       plot_options['line_opt']['line_style'] = line_style
-
-#   return
-
 def op(variable_name,
        y_label=None, ylog=None, y_range=None, y_sublabel=None,
        z_range=None, zlog=None, z_sublabel=None, z_label=None,
@@ -522,14 +393,19 @@ def op(variable_name,
 
     # zaxis_opt の編集（存在する場合のみ）
     if 'zaxis_opt' in plot_options and isinstance(plot_options['zaxis_opt'], dict):
-        if z_range is not None:
-            plot_options['zaxis_opt']['z_range'] = z_range
         if zlog is not None:
             plot_options['zaxis_opt']['z_axis_type'] = zlog
+            if zlog:
+                # data = data_quants[variable_name]
+                cleaned_data = data.values[np.isfinite(data.values)]
+                non_zero_cleaned_data = cleaned_data[cleaned_data != 0]
+                data.plot_options['zaxis_opt']['z_range'] = [non_zero_cleaned_data.min(), non_zero_cleaned_data.max()]
         if z_sublabel is not None:
             plot_options['zaxis_opt']['axis_subtitle'] = z_sublabel
         if z_label is not None:
             plot_options['zaxis_opt']['axis_label'] = z_label
+        if z_range is not None:
+            plot_options['zaxis_opt']['z_range'] = z_range
 
     # line_opt の編集（存在しない場合は作成する）
     if 'line_opt' not in plot_options:
@@ -603,11 +479,14 @@ def initialize_plot_options(variable_name):
 from pyspedas import store_data
 def sd(variable_name, data): # store_data の略
     store_data(variable_name, data=data)
+    initialize_plot_options(variable_name)
     data = data_quants[variable_name]
     if hasattr(data, 'spec_bins'):
-        op(variable_name, ylog=1, zlog=1, y_range=[data.spec_bins.values.min(), data.spec_bins.values.max()], z_range=[data.values.min(), data.values.max()])
+        op(variable_name, spec=1, y_range=[data.spec_bins.values.min(), data.spec_bins.values.max()], z_range=[data.values.min(), data.values.max()])
     else:
-        op(variable_name, ylog=0, y_range=[data.min(), data.max()])
+        data = data.values[np.isfinite(data.values)]
+        data = data[data != 0]
+        op(variable_name, y_range=[data.min(), data.max()])
 
 def split_vec(variable):
     data = data_quants[variable]
