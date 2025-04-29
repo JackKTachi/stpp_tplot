@@ -28,7 +28,6 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
     else:    
       utc_timezone = pytz.utc
       datetime_range_utc = [datetime.datetime.fromtimestamp(ts, tz=utc_timezone) for ts in common_trange]
-      # print(datetime_range_utc)
       ax.set_xlim(datetime_range_utc[0], datetime_range_utc[1])
 
     """ y axix """
@@ -126,17 +125,32 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
             if cleaned_data.size == 0:
               print("No finite values found in {} data.".format(variable))
             non_zero_cleaned_data = cleaned_data[cleaned_data != 0]
-            data.plot_options['zaxis_opt']['z_range'] = [non_zero_cleaned_data.min(), non_zero_cleaned_data.max()]
+            if non_zero_cleaned_data.size > 0:
+                data.plot_options['zaxis_opt']['z_range'] = [non_zero_cleaned_data.min(), non_zero_cleaned_data.max()]
+            else:
+                # データがないときのデフォルトのz_rangeを設定する
+                data.plot_options['zaxis_opt']['z_range'] = [1e-10, 1e-9]  # 仮設定、データの単位に合わせて調整してOK
+                print(f"Warning: {variable} has no non-zero data. Setting default z_range.")
+
         if data.plot_options['zaxis_opt']['z_axis_type'] == 1 or data.plot_options['zaxis_opt']['z_axis_type'] == 'log':
             norm = mcolors.LogNorm(vmin=data.plot_options['zaxis_opt']['z_range'][0], vmax=data.plot_options['zaxis_opt']['z_range'][1])
         else:
             norm = None
 
         cleaned_xr = data.where(np.isfinite(data), drop=True)
-        mesh = ax.pcolormesh(cleaned_xr.time, cleaned_xr.spec_bins, cleaned_xr.T, shading='nearest',cmap=cmap, norm=norm)
+
+        if cleaned_xr.time.size == 0 or cleaned_xr.spec_bins.size == 0 or cleaned_xr.T.size == 0:
+            print(f"Warning: {variable} has no valid data to plot. Skipping.")
+            return
+
+        mesh = ax.pcolormesh(cleaned_xr.time, cleaned_xr.spec_bins, cleaned_xr.T, shading='nearest', cmap=cmap, norm=norm)
 
         if cax is not None: # colorbar axes が指定されている場合
-            plt.colorbar(mesh, cax=cax, label=data.plot_options['zaxis_opt']['axis_label']) # cax に colorbar を描画
+            try:
+                plt.colorbar(mesh, cax=cax, label=data.plot_options['zaxis_opt']['axis_label']) # cax に colorbar を描画
+            except Exception as e:
+                print(f"Error processing {key}: {e}")
+                print("Set zauto=True in mp or set z_range with op")
         else: # colorbar axes が指定されていない場合は、axes に隣接して描画 (以前の動作)
             fig = plt.gcf()
             fig.colorbar(mesh, ax=ax, label=data.plot_options['zaxis_opt']['axis_label'])
@@ -522,24 +536,24 @@ def xlim(tr):
                 if data.plot_options['extras']['spec'] == 1:
                     y_bins = data.spec_bins.values
                     cleaned_data = y_bins[np.isfinite(y_bins)]
-                    if cleaned_data.size == 0:
-                        print("No finite values found in {} data.".format(key))
+                    # if cleaned_data.size == 0:
+                        # print("No finite values found in {} data.".format(key))
                     data.plot_options['yaxis_opt']['y_range'] = [cleaned_data.min(), cleaned_data.max()]
                     cleaned_data = data.values[np.isfinite(data.values)]
-                    if cleaned_data.size == 0:
-                        print("No finite values found in {} data.".format(key))
+                    # if cleaned_data.size == 0:
+                        # print("No finite values found in {} data.".format(key))
                     data.plot_options['zaxis_opt']['z_range'] = [cleaned_data.min(), cleaned_data.max()] 
                 elif data.plot_options['extras']['spec'] == 0:
-                    cleaned_data = data.values[np.isfinite(data.values)]
-                    if cleaned_data.size == 0:
-                        print("No finite values found in {} data.".format(key))
+                    # cleaned_data = data.values[np.isfinite(data.values)]
+                    # if cleaned_data.size == 0:
+                        # print("No finite values found in {} data.".format(key))
                     data.plot_options['yaxis_opt']['y_range'] = [cleaned_data.min()*0.9, cleaned_data.max()*1.1]
                     # print(cleaned_data.min(), cleaned_data.max())
 
             else:
                 cleaned_data = data.values[np.isfinite(data.values)]
-                if cleaned_data.size == 0:
-                    print("No finite values found in {} data.".format(key))
+                # if cleaned_data.size == 0:
+                    # print("No finite values found in {} data.".format(key))
                 data.plot_options['yaxis_opt']['y_range'] = [cleaned_data.min()*0.9, cleaned_data.max()*1.1]
         except Exception as e:
             print(f"Error processing {key}: {e}")
