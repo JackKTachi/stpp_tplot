@@ -149,8 +149,12 @@ def single_plot_内部関数(ax, variable, common_trange, cax=None, legend_label
             try:
                 plt.colorbar(mesh, cax=cax, label=data.plot_options['zaxis_opt']['axis_label']) # cax に colorbar を描画
             except Exception as e:
-                print(f"Error processing {key}: {e}")
+                print(f"Error processing: {e}")
                 print("Set zauto=True in mp or set z_range with op")
+                norm = mcolors.LogNorm(vmin=1e0, vmax=1e1)
+                mesh = ax.pcolormesh(cleaned_xr.time, cleaned_xr.spec_bins, cleaned_xr.T, shading='nearest', cmap=cmap, norm=norm)                
+                plt.colorbar(mesh, cax=cax, label=data.plot_options['zaxis_opt']['axis_label']) # cax に colorbar を描画
+                pass
         else: # colorbar axes が指定されていない場合は、axes に隣接して描画 (以前の動作)
             fig = plt.gcf()
             fig.colorbar(mesh, ax=ax, label=data.plot_options['zaxis_opt']['axis_label'])
@@ -204,6 +208,9 @@ def orbit_label_panel(ax, orbit_data, xaxis_ticks, font_size,
 
     for i_component in range(num_components):
         orbit_values = []
+        if component_labels is not None and len(component_labels) == 0:
+            component_labels = [" "] * num_components
+            print("To add orbit labels, please set legend_names in op()")
         if component_labels[i_component] is None:
             component_labels[i_component] = f"Component {i_component + 1}"
         for tick_dt in xaxis_ticks:
@@ -322,6 +329,9 @@ def mp(variables,
                 else:
                     legend_label = None # 2番目以降の変数は凡例ラベルなし
                 single_plot_内部関数(ax, variable, common_trange, cax=cax, legend_label=legend_label, yauto=yauto, zauto=zauto)
+                # except Exception as e:
+                #     print(f"Error processing {variable}: {e}")
+                #     single_plot_内部関数(ax, variable, common_trange, cax=cax, legend_label=legend_label, yauto=yauto, zauto=True)
         else: # variable_group がリストでない場合 (通常のプロット)
             single_plot_内部関数(ax, variable_group, common_trange, cax=cax, yauto=yauto, zauto=zauto)
 
@@ -366,7 +376,12 @@ def mp(variables,
     plt.subplots_adjust(hspace=0.1)
     
     if save_path is not None:
-      plt.savefig(save_path)
+        try:
+            plt.savefig(save_path)
+        except Exception as e:
+            print(f"Error saving figure: {e}")
+            print("Figure not saved.")
+            pass
 
     if display:
         plt.show()
